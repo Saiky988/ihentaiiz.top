@@ -1,22 +1,10 @@
-/**
- * HentaiZ Frontend - UI Components
- * Pure vanilla JS, no frameworks
- */
-
 import {
-  formatViews,
-  formatEpisode,
-  truncate,
-  sanitizeText,
-  getAnimationTypeLabel,
-  htmlToFragment
+  formatViews, formatEpisode, truncate, sanitizeText,
+  getAnimationTypeLabel, htmlToFragment
 } from './utils.js';
 
 const ACCENT = '#ff2d7d';
 
-/**
- * Renders the site header/navbar
- */
 export function renderHeader({ seo, navigation }) {
   const drawer = navigation?.drawer || [];
   const bottom = navigation?.bottom || [];
@@ -30,7 +18,6 @@ export function renderHeader({ seo, navigation }) {
         ${item.isNew ? '<span class="badge-new">NEW</span>' : ''}
       </a>
     `).join('');
-
     return `
       <div class="drawer-section">
         ${section.hideTitle ? '' : `<h3 class="drawer-section-title">${sanitizeText(section.title)}</h3>`}
@@ -52,32 +39,28 @@ export function renderHeader({ seo, navigation }) {
         <button class="menu-toggle" id="menu-toggle" aria-label="Mở menu" aria-expanded="false" aria-controls="nav-drawer">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
-
         <a href="/" class="site-logo" aria-label="${sanitizeText(seo.brandName)} Home">
           <span class="logo-text">${sanitizeText(seo.brandName)}</span>
-          <span class="logo-dot" style="color:${ACCENT}">.</span>
+          <span class="logo-dot">.</span>
         </a>
-
         <nav class="header-nav" aria-label="Main navigation">
           ${bottom.slice(0, 5).map(item => `
             <a href="${item.url || '#'}" class="header-nav-link">${sanitizeText(item.title)}</a>
           `).join('')}
         </nav>
-
         <div class="header-actions">
-          <button class="search-toggle" id="search-toggle" aria-label="Tìm kiếm">
+          <button class="header-btn search-toggle" id="search-toggle" aria-label="Tìm kiếm">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </button>
-          <button class="theme-toggle" id="theme-toggle" aria-label="Chuyển đổi giao diện">
+          <button class="header-btn theme-toggle" id="theme-toggle" aria-label="Chuyển đổi giao diện">
             <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           </button>
-          <a href="/login" class="profile-btn" aria-label="Tài khoản">
+          <a href="/login" class="header-btn profile-btn" aria-label="Tài khoản">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </a>
         </div>
       </div>
-
       <div class="search-bar" id="search-bar">
         <div class="search-inner">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -88,7 +71,6 @@ export function renderHeader({ seo, navigation }) {
         </div>
       </div>
     </header>
-
     <aside class="nav-drawer" id="nav-drawer" aria-hidden="true">
       <div class="drawer-overlay" id="drawer-overlay"></div>
       <div class="drawer-panel">
@@ -98,117 +80,92 @@ export function renderHeader({ seo, navigation }) {
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
-        <div class="drawer-body">
-          ${drawerHTML}
-        </div>
+        <div class="drawer-body">${drawerHTML}</div>
       </div>
     </aside>
-
-    <nav class="bottom-nav" aria-label="Bottom navigation">
-      ${bottomHTML}
-    </nav>
+    <nav class="bottom-nav" aria-label="Bottom navigation">${bottomHTML}</nav>
   `;
-
   return htmlToFragment(html);
 }
 
-/**
- * Renders the hero carousel
- */
 export function renderHero({ episodes, title }) {
   if (!episodes?.length) return document.createDocumentFragment();
-
   const slides = episodes.map((ep, idx) => {
     const studios = ep.studios.map(s => sanitizeText(s.name)).join(', ');
-    const genres = ep.genres.map(g => `<span class="hero-genre">${sanitizeText(g.name)}</span>`).join('');
+    const genres = ep.genres.map(g => `<span class="hero-badge hero-badge-outline">${sanitizeText(g.name)}</span>`).join('');
     const isActive = idx === 0 ? 'active' : '';
-
     return `
       <div class="hero-slide ${isActive}" data-index="${idx}" role="group" aria-roledescription="slide" aria-label="${idx + 1} / ${episodes.length}">
         <div class="hero-backdrop">
-          <img class="hero-backdrop-img lazy-img" data-src="${ep.backdropImage || ep.posterImage}" alt="${sanitizeText(ep.title)} backdrop" />
-          <div class="hero-gradient"></div>
+          <img class="hero-backdrop-img lazy-img" data-src="${ep.backdropImage || ep.posterImage}" alt="${sanitizeText(ep.title)}" />
+          <div class="hero-vignette"></div>
         </div>
         <div class="hero-content">
           <div class="hero-meta">
-            <span class="hero-type">${getAnimationTypeLabel(ep.animationType)}</span>
-            ${ep.episodeNumber ? `<span class="hero-episode">${formatEpisode(ep.episodeNumber)}</span>` : ''}
-            <span class="hero-views">${formatViews(ep.viewsTotal)} lượt xem</span>
+            <span class="hero-badge">${getAnimationTypeLabel(ep.animationType)}</span>
+            ${ep.episodeNumber ? `<span class="hero-badge hero-badge-outline">${formatEpisode(ep.episodeNumber)}</span>` : ''}
+            <span class="hero-badge hero-badge-outline">${formatViews(ep.viewsTotal)} views</span>
           </div>
           <h2 class="hero-title">${sanitizeText(ep.title)}</h2>
-          <div class="hero-genres">${genres}</div>
+          <div class="hero-meta">${genres}</div>
           <p class="hero-desc">${truncate(ep.description.replace(/<[^>]+>/g, ''), 180)}</p>
-          <div class="hero-studios">${studios}</div>
+          ${studios ? `<div class="hero-studios">${studios}</div>` : ''}
           <div class="hero-actions">
-            <a href="${ep.url}" class="btn-primary">
+            <a href="${ep.url}" class="btn btn-primary">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               Xem Ngay
             </a>
-            <a href="${ep.url}" class="btn-secondary">Thông Tin</a>
+            <a href="${ep.url}" class="btn btn-secondary">Thông Tin</a>
           </div>
         </div>
       </div>
     `;
   }).join('');
-
   const indicators = episodes.map((_, idx) => `
-    <button class="hero-indicator ${idx === 0 ? 'active' : ''}" data-index="${idx}" aria-label="Chuyển đến slide ${idx + 1}">
+    <button class="hero-indicator ${idx === 0 ? 'active' : ''}" data-index="${idx}" aria-label="Slide ${idx + 1}">
       <span class="indicator-progress"></span>
     </button>
   `).join('');
-
   const html = `
     <section class="hero-section" id="hero" aria-label="Nổi bật">
-      <div class="hero-carousel" id="hero-carousel">
-        ${slides}
-      </div>
+      <div class="hero-carousel" id="hero-carousel">${slides}</div>
       <div class="hero-controls">
-        <button class="hero-arrow hero-prev" id="hero-prev" aria-label="Slide trước">
+        <button class="hero-arrow hero-prev" id="hero-prev" aria-label="Trước">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <div class="hero-indicators" id="hero-indicators">
-          ${indicators}
-        </div>
-        <button class="hero-arrow hero-next" id="hero-next" aria-label="Slide tiếp theo">
+        <div class="hero-indicators" id="hero-indicators">${indicators}</div>
+        <button class="hero-arrow hero-next" id="hero-next" aria-label="Tiếp">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
     </section>
   `;
-
   return htmlToFragment(html);
 }
 
-/**
- * Renders a movie/episode card
- */
 export function renderMovieCard(ep, { lazy = true } = {}) {
   const studios = ep.studios.map(s => sanitizeText(s.name)).join(', ');
   const imgClass = lazy ? 'lazy-img' : '';
   const imgAttr = lazy ? `data-src="${ep.posterImage}"` : `src="${ep.posterImage}"`;
-
   const html = `
     <article class="movie-card" data-id="${ep.id}" data-type="${ep.animationType}">
       <a href="${ep.url}" class="card-link" aria-label="${sanitizeText(ep.title)}">
         <div class="card-poster">
-          <div class="card-img-wrap">
-            <img class="card-img ${imgClass}" ${imgAttr} alt="Poster ${sanitizeText(ep.title)}" loading="lazy" />
-          </div>
+          <img class="card-img ${imgClass}" ${imgAttr} alt="${sanitizeText(ep.title)}" loading="lazy" />
+          <div class="card-gradient"></div>
           <div class="card-badges">
-            <span class="badge-type">${getAnimationTypeLabel(ep.animationType)}</span>
-            ${ep.episodeNumber ? `<span class="badge-ep">${formatEpisode(ep.episodeNumber)}</span>` : ''}
+            <span class="badge badge-type">${getAnimationTypeLabel(ep.animationType)}</span>
+            ${ep.episodeNumber ? `<span class="badge badge-ep">${formatEpisode(ep.episodeNumber)}</span>` : ''}
           </div>
-          <div class="card-overlay">
-            <span class="card-play">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            </span>
-          </div>
+          <span class="card-play">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </span>
         </div>
         <div class="card-info">
           <h3 class="card-title">${sanitizeText(ep.title)}</h3>
           <div class="card-meta">
             <span class="card-views">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               ${formatViews(ep.viewsTotal)}
             </span>
             ${studios ? `<span class="card-studio">${truncate(studios, 24)}</span>` : ''}
@@ -217,21 +174,15 @@ export function renderMovieCard(ep, { lazy = true } = {}) {
       </a>
     </article>
   `;
-
   return htmlToFragment(html).firstElementChild;
 }
 
-/**
- * Renders a section grid
- */
 export function renderSection({ title, episodes, viewAllUrl, key }) {
   if (!episodes?.length) return document.createDocumentFragment();
-
   const cards = episodes.map(ep => {
     const card = renderMovieCard(ep);
     return card?.outerHTML || '';
   }).join('');
-
   const html = `
     <section class="content-section" data-section="${key}" aria-label="${sanitizeText(title)}">
       <div class="section-header">
@@ -241,96 +192,64 @@ export function renderSection({ title, episodes, viewAllUrl, key }) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </a>
       </div>
-      <div class="movie-grid" id="grid-${key}">
-        ${cards}
-      </div>
+      <div class="movie-grid" id="grid-${key}">${cards}</div>
     </section>
   `;
-
   return htmlToFragment(html);
 }
 
-/**
- * Renders the sidebar
- */
 export function renderSidebar({ genres, studios, years, stats }) {
   const genreHTML = genres.slice(0, 20).map(g => `
     <a href="/genres/${g.slug}" class="filter-chip">${sanitizeText(g.name)}</a>
   `).join('');
-
   const studioHTML = studios.slice(0, 16).map(s => `
     <a href="/studios/${s.slug}" class="filter-chip filter-chip-studio">${sanitizeText(s.name)}</a>
   `).join('');
-
   const yearHTML = years.slice(0, 10).map(y => `
     <a href="/browse?year=${y}" class="filter-chip">${y}</a>
   `).join('');
-
   const html = `
-    <aside class="site-sidebar" id="sidebar" aria-label="Bộ lọc và khám phá">
+    <aside class="site-sidebar" id="sidebar" aria-label="Bộ lọc">
       <div class="sidebar-block">
         <h3 class="sidebar-title">Thể Loại</h3>
         <div class="filter-chips">${genreHTML}</div>
-        <a href="/genres" class="sidebar-more">Xem tất cả thể loại →</a>
+        <a href="/genres" class="sidebar-more">Xem tất cả →</a>
       </div>
-
       <div class="sidebar-block">
         <h3 class="sidebar-title">Hãng Phim</h3>
         <div class="filter-chips">${studioHTML}</div>
-        <a href="/studios" class="sidebar-more">Xem tất cả studio →</a>
+        <a href="/studios" class="sidebar-more">Xem tất cả →</a>
       </div>
-
       <div class="sidebar-block">
-        <h3 class="sidebar-title">Năm Phát Hành</h3>
+        <h3 class="sidebar-title">Năm</h3>
         <div class="filter-chips">${yearHTML}</div>
       </div>
-
       <div class="sidebar-block stats-block">
         <h3 class="sidebar-title">Thống Kê</h3>
         <div class="stats-grid">
-          <div class="stat-item">
-            <span class="stat-value">${(stats?.animeCount || 0).toLocaleString('vi-VN')}</span>
-            <span class="stat-label">Anime</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value">${(stats?.commentCount || 0).toLocaleString('vi-VN')}</span>
-            <span class="stat-label">Bình luận</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-value">${(stats?.userCount || 0).toLocaleString('vi-VN')}</span>
-            <span class="stat-label">Thành viên</span>
-          </div>
+          <div class="stat-item"><span class="stat-value">${(stats?.animeCount || 0).toLocaleString('vi-VN')}</span><span class="stat-label">Anime</span></div>
+          <div class="stat-item"><span class="stat-value">${(stats?.commentCount || 0).toLocaleString('vi-VN')}</span><span class="stat-label">Bình luận</span></div>
+          <div class="stat-item"><span class="stat-value">${(stats?.userCount || 0).toLocaleString('vi-VN')}</span><span class="stat-label">Thành viên</span></div>
         </div>
       </div>
     </aside>
   `;
-
   return htmlToFragment(html);
 }
 
-/**
- * Renders the footer
- */
 export function renderFooter({ navigation, seo }) {
   const footerSections = navigation?.footer || [];
-
   const columns = footerSections.map(section => {
     const items = (section?.items || []).map(item => `
-      <a href="${item.url || '#'}" class="footer-link" target="${item.url?.startsWith('http') ? '_blank' : '_self'}" rel="${item.url?.startsWith('http') ? 'noopener noreferrer' : ''}">
-        ${sanitizeText(item.title)}
-      </a>
+      <a href="${item.url || '#'}" class="footer-link" target="${item.url?.startsWith('http') ? '_blank' : '_self'}" rel="${item.url?.startsWith('http') ? 'noopener noreferrer' : ''}">${sanitizeText(item.title)}</a>
     `).join('');
-
     return `
       <div class="footer-col">
         <h4 class="footer-col-title">${sanitizeText(section.title)}</h4>
-        <nav class="footer-links" aria-label="${sanitizeText(section.title)}">
-          ${items}
-        </nav>
+        <nav class="footer-links" aria-label="${sanitizeText(section.title)}">${items}</nav>
       </div>
     `;
   }).join('');
-
   const html = `
     <footer class="site-footer">
       <div class="footer-inner">
@@ -338,9 +257,7 @@ export function renderFooter({ navigation, seo }) {
           <a href="/" class="footer-logo">${sanitizeText(seo.brandName)}<span style="color:${ACCENT}">.</span></a>
           <p class="footer-desc">${sanitizeText(seo.description).slice(0, 160)}</p>
         </div>
-        <div class="footer-columns">
-          ${columns}
-        </div>
+        <div class="footer-columns">${columns}</div>
       </div>
       <div class="footer-bottom">
         <p class="copyright">© ${new Date().getFullYear()} ${sanitizeText(seo.brandName)}. All rights reserved.</p>
@@ -348,30 +265,22 @@ export function renderFooter({ navigation, seo }) {
       </div>
     </footer>
   `;
-
   return htmlToFragment(html);
 }
 
-/**
- * Renders announcement banner
- */
 export function renderAnnouncement({ enabled, html }) {
   if (!enabled || !html) return document.createDocumentFragment();
-  const fragment = htmlToFragment(`
+  return htmlToFragment(`
     <div class="announcement-bar" id="announcement-bar">
       <div class="announcement-inner">
         <span class="announcement-icon">📢</span>
         <span class="announcement-text">${html}</span>
-        <button class="announcement-close" id="announcement-close" aria-label="Đóng thông báo">×</button>
+        <button class="announcement-close" id="announcement-close" aria-label="Đóng">×</button>
       </div>
     </div>
   `);
-  return fragment;
 }
 
-/* ============================================================
-   Icon SVG map (minimal set for common icons)
-   ============================================================ */
 function getIconSVG(name) {
   const icons = {
     IconHome: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
@@ -400,6 +309,5 @@ function getIconSVG(name) {
     IconBrandSafari: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>',
     IconBrandDiscord: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12a1 1 0 1 0 2 0 1 1 0 1 0-2 0"/><path d="M14 12a1 1 0 1 0 2 0 1 1 0 1 0-2 0"/><path d="M15.5 17c0 1 1.5 2 1.5 2s1.5-1 1.5-2"/><path d="M8.5 17c0 1-1.5 2-1.5 2s-1.5-1-1.5-2"/><path d="M6.5 8c0-1 1.5-2 1.5-2s1.5 1 1.5 2"/><path d="M17.5 8c0-1-1.5-2-1.5-2s-1.5 1-1.5 2"/><path d="M7.5 8c0-1 1.5-2 1.5-2s1.5 1 1.5 2"/><path d="M7.5 16c0 1 1.5 2 1.5 2s1.5-1 1.5-2"/><path d="M16.5 16c0 1-1.5 2-1.5 2s-1.5-1-1.5-2"/></svg>'
   };
-
   return icons[name] || icons['IconHome'];
 }
