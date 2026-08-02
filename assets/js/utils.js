@@ -85,12 +85,19 @@ export function sanitizeText(str) {
 
 /**
  * Normalizes image URL to absolute
+ * Handles: null, {filePath: "..."}, "/path", "//host/path", "https://..."
  */
 export function normalizeImageURL(url) {
   if (!url) return '';
+  // If it's an object with filePath (SvelteKit image format)
+  if (typeof url === 'object') {
+    url = url.filePath || url.url || url.src || '';
+  }
+  if (typeof url !== 'string') return '';
   if (url.startsWith('http')) return url;
   if (url.startsWith('//')) return 'https:' + url;
-  return CDN_ORIGIN + url;
+  if (url.startsWith('/')) return CDN_ORIGIN + url;
+  return CDN_ORIGIN + '/' + url;
 }
 
 /**
@@ -178,24 +185,26 @@ export function htmlToFragment(html) {
 }
 
 /**
- * Lazy image observer (Đã fix lỗi Can't find variable: observer)
+ * Lazy image observer
+ * FIX: observer variable must be declared before the callback
  */
 export function createLazyObserver(callback) {
   if (!('IntersectionObserver' in window)) {
-    return { observe: (el) => callback(el), disconnect: () => {} };
+    return {
+      observe: (el) => callback(el),
+      disconnect: () => {}
+    };
   }
-  // Thêm `obs` vào tham số thứ 2 của callback
-  return new IntersectionObserver((entries, obs) => {
+  const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         callback(entry.target);
-        obs.unobserve(entry.target); // Đổi `observer` thành `obs`
+        observer.unobserve(entry.target);
       }
     });
   }, { rootMargin: '200px' });
+  return observer;
 }
-
-
 
 /**
  * Detects if user prefers reduced motion
