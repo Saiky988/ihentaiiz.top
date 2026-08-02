@@ -4,7 +4,7 @@
  */
 
 const SITE_ORIGIN = 'https://hentaiz1.com';
-const CDN_ORIGIN = 'https://cdn.hentaiz1.com';
+const CDN_ORIGIN = 'https://storage.haiten.org';
 
 /**
  * Safely resolves SvelteKit data references
