@@ -178,22 +178,23 @@ export function htmlToFragment(html) {
 }
 
 /**
- * Lazy image observer
+ * Lazy image observer (Đã fix lỗi Can't find variable: observer)
  */
 export function createLazyObserver(callback) {
   if (!('IntersectionObserver' in window)) {
     return { observe: (el) => callback(el), disconnect: () => {} };
   }
-  // THÊM tham số `obs` vào đây
+  // Thêm `obs` vào tham số thứ 2 của callback
   return new IntersectionObserver((entries, obs) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         callback(entry.target);
-        obs.unobserve(entry.target); // SỬA observer THÀNH obs
+        obs.unobserve(entry.target); // Đổi `observer` thành `obs`
       }
     });
   }, { rootMargin: '200px' });
 }
+
 
 
 /**
