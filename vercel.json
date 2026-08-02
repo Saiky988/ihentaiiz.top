@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/data",
+      "destination": "https://hentaiz1.com/__data.json?x-sveltekit-trailing-slash=1&x-sveltekit-invalidated=011"
+    }
+  ]
+}
