@@ -4,7 +4,6 @@
  */
 
 const SITE_ORIGIN = 'https://hentaiz1.com';
-// FIX 1: Đổi sang CDN domain chứa ảnh thực tế
 const CDN_ORIGIN = 'https://storage.haiten.org';
 
 /**
@@ -89,12 +88,9 @@ export function sanitizeText(str) {
  */
 export function normalizeImageURL(url) {
   if (!url) return '';
-  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('http')) return url;
   if (url.startsWith('//')) return 'https:' + url;
-  
-  // Đảm bảo path bắt đầu bằng /
-  const path = url.startsWith('/') ? url : '/' + url;
-  return CDN_ORIGIN + path;
+  return CDN_ORIGIN + url;
 }
 
 /**
@@ -188,16 +184,17 @@ export function createLazyObserver(callback) {
   if (!('IntersectionObserver' in window)) {
     return { observe: (el) => callback(el), disconnect: () => {} };
   }
-  // FIX 2: Thêm tham số `obs` vào callback để tránh bị lỗi undefined `observer`
+  // THÊM tham số `obs` vào đây
   return new IntersectionObserver((entries, obs) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         callback(entry.target);
-        obs.unobserve(entry.target);
+        obs.unobserve(entry.target); // SỬA observer THÀNH obs
       }
     });
   }, { rootMargin: '200px' });
 }
+
 
 /**
  * Detects if user prefers reduced motion
