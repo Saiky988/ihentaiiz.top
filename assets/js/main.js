@@ -3,7 +3,7 @@
  */
 import { initRender } from './render.js';
 
-const API_URL = 'https://hentaiz1.com/__data.json?x-sveltekit-trailing-slash=1&x-sveltekit-invalidated=011';
+const API_URL = '/api/data';
 
 async function boot() {
   try {
