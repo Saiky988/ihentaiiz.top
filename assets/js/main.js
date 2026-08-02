@@ -3,7 +3,7 @@
  */
 import { initRender } from './render.js';
 
-const API_URL = '/api/data';
+const API_URL = 'https://cdn.elyriax.com/api/v1/hentai/home';
 
 async function boot() {
   try {
