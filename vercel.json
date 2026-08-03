@@ -3,7 +3,7 @@
   "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/watch/:slug*",
+      "source": "/watch/(.*)",
       "destination": "/index.html"
     },
     {
