@@ -311,8 +311,12 @@ body {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     gap: var(--space-3);
-    padding: var(--space-1) 0;
-    margin: 0 calc(var(--space-4) * -1);
+    padding-top: var(--space-1);
+    padding-bottom: var(--space-1);
+    
+    /* Tràn lề màn hình nhưng giữ padding 2 đầu */
+    margin-left: calc(var(--space-4) * -1);
+    margin-right: calc(var(--space-4) * -1);
     padding-left: var(--space-4);
     padding-right: var(--space-4);
 
@@ -325,10 +329,13 @@ body {
     display: none;
   }
 
-  /* Peek spacer so last card isn't flush */
+  /* Phần đệm giả cố định đằng trước card đầu và sau card cuối */
+  .movie-grid::before,
   .movie-grid::after {
     content: '';
-    flex: 0 0 var(--space-2);
+    flex: 0 0 auto;
+    width: 1px;
+    margin-left: -1px;
   }
 
   .movie-card {
@@ -340,6 +347,7 @@ body {
     box-shadow: none;
     border: 1px solid var(--hz-border-subtle);
   }
+}
 
   .movie-card:hover {
     transform: none;
