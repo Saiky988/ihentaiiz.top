@@ -341,7 +341,7 @@ body {
 
   .movie-card {
     flex: 0 0 auto;
-    width: clamp(140px, 50vw, 200px);
+    width: clamp(120px, 28vw, 160px);
     scroll-snap-align: start;
     border-radius: var(--radius-md);
     transform: none;
