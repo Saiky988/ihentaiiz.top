@@ -301,9 +301,6 @@ body {
 /* ============================================================
    05. MOVIE GRID → HORIZONTAL SLIDER  (≤1024px)
    ============================================================ */
-/* ============================================================
-   05. MOVIE GRID → HORIZONTAL SLIDER  (≤1024px)
-   ============================================================ */
 @media (max-width: 1024px) {
   .movie-grid {
     display: flex;
@@ -344,7 +341,7 @@ body {
 
   .movie-card {
     flex: 0 0 auto;
-    width: clamp(140px, 32vw, 200px);
+    width: clamp(120px, 32vw, 200px);
     scroll-snap-align: start;
     border-radius: var(--radius-md);
     transform: none;
