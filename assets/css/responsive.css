@@ -24,7 +24,7 @@
    ============================================================ */
 @media (max-width: 1024px) {
   .site-header {
-    position: sticky;
+    position: fixed;
     background: var(--hz-surface);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
