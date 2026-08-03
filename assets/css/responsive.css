@@ -301,6 +301,9 @@ body {
 /* ============================================================
    05. MOVIE GRID → HORIZONTAL SLIDER  (≤1024px)
    ============================================================ */
+/* ============================================================
+   05. MOVIE GRID → HORIZONTAL SLIDER  (≤1024px)
+   ============================================================ */
 @media (max-width: 1024px) {
   .movie-grid {
     display: flex;
@@ -314,11 +317,11 @@ body {
     padding-top: var(--space-1);
     padding-bottom: var(--space-1);
 
-    /* Cố định điểm dừng cuộn cách mép màn hình 16px */
+    /* Ép điểm va dừng Snap chuẩn 16px ở cả 2 đầu */
     scroll-padding-left: var(--space-4);
     scroll-padding-right: var(--space-4);
 
-    /* Tràn lề nhưng tạo lót đệm padding chuẩn */
+    /* Tràn viền màn hình nhưng giữ padding lót 16px cân bằng 2 bên */
     margin-left: calc(var(--space-4) * -1);
     margin-right: calc(var(--space-4) * -1);
     padding-left: var(--space-4);
@@ -333,11 +336,10 @@ body {
     display: none;
   }
 
-  /* Tạo khoảng trống ảo ở cuối chuỗi để card cuối không dính sát lề */
+  /* Xóa bỏ hoàn toàn phần tử giả để tránh phồng lề card cuối */
+  .movie-grid::before,
   .movie-grid::after {
-    content: '';
-    flex: 0 0 var(--space-1);
-    padding-right: var(--space-3);
+    display: none !important;
   }
 
   .movie-card {
