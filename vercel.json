@@ -3,11 +3,15 @@
   "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/watch/(.*)",
+      "source": "/watch/:path*",
       "destination": "/index.html"
     },
     {
-      "source": "/((?!assets/|api/).*)",
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
