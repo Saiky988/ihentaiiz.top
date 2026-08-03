@@ -1,17 +1,8 @@
 {
   "version": 2,
-  "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/watch/:path*",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/:path*",
+      "source": "/watch/(.*)",
       "destination": "/index.html"
     }
   ]
