@@ -14,10 +14,6 @@
   }
 }
 
-body {
-  padding-top: var(--header-height, 100px);
-}
-
 /* Momentum scrolling for all overflow containers */
 * {
   -webkit-overflow-scrolling: touch;
