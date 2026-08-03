@@ -2,13 +2,20 @@
  * HentaiZ Frontend - Entry Point
  */
 import { initRender } from './render.js';
+import { initWatchPage } from './watch.js';
 
-const API_URL = 'https://cdn.elyriax.com/api/v1/hentai/home';
+const API_HOME_URL = 'https://cdn.elyriax.com/api/v1/hentai/home';
 
 async function boot() {
+  const pathname = window.location.pathname;
+
+  if (pathname.startsWith('/watch')) {
+    initWatchPage();
+    return;
+  }
+
   try {
-    // Try fetch from API first
-    const res = await fetch(API_URL, { credentials: 'omit' });
+    const res = await fetch(API_HOME_URL);
     if (!res.ok) throw new Error('API fetch failed');
     const text = await res.text();
     const lines = text.split('\n').filter(l => l.trim());
@@ -22,14 +29,7 @@ async function boot() {
       return;
     }
   } catch (e) {
-    console.warn('API fetch failed, falling back to embedded data:', e);
-  }
-
-  // Fallback: use embedded window.__DATA if present (SSR injection)
-  if (window.__DATA) {
-    const nodes = window.__DATA.nodes || [];
-    const chunks = window.__DATA.chunks || [];
-    initRender(nodes, chunks);
+    console.warn('API fetch failed:', e);
   }
 }
 
