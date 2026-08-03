@@ -313,8 +313,12 @@ body {
     gap: var(--space-3);
     padding-top: var(--space-1);
     padding-bottom: var(--space-1);
-    
-    /* Tràn lề màn hình nhưng giữ padding 2 đầu */
+
+    /* Cố định điểm dừng cuộn cách mép màn hình 16px */
+    scroll-padding-left: var(--space-4);
+    scroll-padding-right: var(--space-4);
+
+    /* Tràn lề nhưng tạo lót đệm padding chuẩn */
     margin-left: calc(var(--space-4) * -1);
     margin-right: calc(var(--space-4) * -1);
     padding-left: var(--space-4);
@@ -329,13 +333,11 @@ body {
     display: none;
   }
 
-  /* Phần đệm giả cố định đằng trước card đầu và sau card cuối */
-  .movie-grid::before,
+  /* Tạo khoảng trống ảo ở cuối chuỗi để card cuối không dính sát lề */
   .movie-grid::after {
     content: '';
-    flex: 0 0 auto;
-    width: 1px;
-    margin-left: -1px;
+    flex: 0 0 var(--space-1);
+    padding-right: var(--space-3);
   }
 
   .movie-card {
