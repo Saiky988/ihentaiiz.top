@@ -320,7 +320,7 @@ body {
 
     /* Tràn lề nhưng tạo lót đệm padding chuẩn */
     margin-left: calc(var(--space-4) * -1);
-    margin-right: calc(var(--space-4));
+    margin-right: calc(var(--space-4) * 1);
     padding-left: var(--space-4);
     padding-right: var(--space-4);
 
