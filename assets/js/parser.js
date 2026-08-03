@@ -40,12 +40,13 @@ export function parseHomeData(rawNodes, rawChunks = []) {
   }
 
   const payloads = sectionsRoot?.payloads || [];
-  const enrichedPayloads = payloads.map((p, idx) => {
+  let promiseIdx = 0;
+  const enrichedPayloads = payloads.map((p) => {
     const key = p?.key;
     // Some payloads reference chunks via promise
     if (p?.promise && Array.isArray(p.promise)) {
-      const chunkId = String(idx + 1); // chunks are 1-indexed in this dataset
-      const chunk = chunks.get(chunkId);
+      promiseIdx++;
+      const chunk = chunks.get(String(promiseIdx));
       if (chunk) {
         return { ...p, ...chunk, key };
       }
