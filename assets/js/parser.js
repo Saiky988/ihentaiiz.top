@@ -286,6 +286,11 @@ function normalizeEpisode(raw) {
     return { name: ge?.name || '', slug: ge?.slug || '' };
   }).filter(g => g.name);
 
+  let posterImage = normalizeImageURL(raw.posterImage?.filePath || raw.posterImage);
+  const backdropImage = normalizeImageURL(raw.backdropImage?.filePath || raw.backdropImage);
+  // Fallback: nếu poster thiếu thì dùng backdrop
+  if (!posterImage && backdropImage) posterImage = backdropImage;
+
   return {
     id: raw.id || '',
     title: raw.title || 'Unknown',
@@ -293,8 +298,8 @@ function normalizeEpisode(raw) {
     episodeNumber: raw.episodeNumber ?? null,
     duration: raw.duration ?? null,
     animationType: raw.animationType || 'TWO_D',
-    posterImage: normalizeImageURL(raw.posterImage?.filePath || raw.posterImage),
-    backdropImage: normalizeImageURL(raw.backdropImage?.filePath || raw.backdropImage),
+    posterImage,
+    backdropImage,
     studios,
     description: raw.description || '',
     releaseYear: raw.releaseYear ?? null,
