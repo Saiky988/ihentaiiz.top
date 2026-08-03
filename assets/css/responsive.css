@@ -81,6 +81,8 @@ body {
    ============================================================ */
 @media (max-width: 1024px) {
   .hero-section {
+    position: relative;
+    overflow: hidden;
     height: auto;
     aspect-ratio: 4 / 2.3;
     min-height: 260px;
