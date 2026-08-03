@@ -74,13 +74,15 @@ function renderWatchUI(container, { anime, embedUrl, episodes }) {
     `;
   }).join('');
 
+  const proxyEmbedUrl = embedUrl ? `https://cdn.elyriax.com/api/v1/hentai/player?url=${encodeURIComponent(embedUrl)}` : '';
+
   container.innerHTML = `
     <div class="watch-container" style="max-width: 1400px; margin: 0 auto; padding: 20px 16px;">
       
       <!-- Video Iframe Section -->
       <div class="player-wrapper" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
         ${embedUrl ? `
-          <iframe src="${embedUrl}" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+          <iframe src="${proxyEmbedUrl}" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
         ` : `
           <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9ca3af;">
             <span>⚠️ Nguồn video chưa sẵn sàng</span>
