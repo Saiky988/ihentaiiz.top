@@ -410,7 +410,7 @@ body {
   }
 
   .card-meta {
-    font-size: 10px;
+    font-size: 9px;
     gap: var(--space-1);
   }
 
@@ -423,11 +423,10 @@ body {
 /* Màn hình điện thoại vừa (≤768px) */
 @media (max-width: 768px) {
   .movie-card {
-    width: clamp(115px, 27vw, 155px); /* Giảm chiều rộng card */
+    width: clamp(115px, 27vw, 155px);
   }
 }
 
-/* Màn hình điện thoại nhỏ (≤480px - như iPhone SE/12 mini...) */
 @media (max-width: 480px) {
   .movie-card {
     width: clamp(110px, 26vw, 150px);
