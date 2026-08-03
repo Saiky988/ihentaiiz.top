@@ -341,7 +341,7 @@ body {
 
   .movie-card {
     flex: 0 0 auto;
-    width: clamp(140px, 32vw, 200px);
+    width: clamp(120px, 28vw, 160px);
     scroll-snap-align: start;
     border-radius: var(--radius-md);
     transform: none;
@@ -420,27 +420,24 @@ body {
   }
 }
 
+/* Màn hình điện thoại vừa (≤768px) */
 @media (max-width: 768px) {
   .movie-card {
-    width: clamp(100px, 28vw, 160px);
+    width: clamp(110px, 26vw, 150px); /* Giảm chiều rộng card */
   }
 }
 
-@media (max-width: 640px) {
-  .movie-card {
-    width: clamp(125px, 29vw, 160px);
-  }
-}
-
+/* Màn hình điện thoại nhỏ (≤480px - như iPhone SE/12 mini...) */
 @media (max-width: 480px) {
   .movie-card {
-    width: clamp(115px, 28vw, 145px);
+    width: clamp(100px, 25vw, 130px); /* Nhỏ gọn hơn nữa để hiện được nhiều card hơn */
   }
 
   .movie-grid {
-    gap: var(--space-2);
+    gap: var(--space-2); /* Thu hẹp bớt khoảng cách giữa các card nếu cần */
   }
 }
+
 
 /* ============================================================
    06. SIDEBAR  (≤1024px)
