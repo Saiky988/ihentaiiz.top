@@ -15,7 +15,7 @@
 }
 
 body {
-  padding-top: var(--header-height, 56px);
+  padding-top: var(--header-height, 50px);
 }
 
 /* Momentum scrolling for all overflow containers */
