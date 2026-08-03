@@ -341,7 +341,7 @@ body {
 
   .movie-card {
     flex: 0 0 auto;
-    width: clamp(120px, 28vw, 160px);
+    width: clamp(140px, 32vw, 200px);
     scroll-snap-align: start;
     border-radius: var(--radius-md);
     transform: none;
@@ -422,7 +422,7 @@ body {
 
 @media (max-width: 768px) {
   .movie-card {
-    width: clamp(130px, 30vw, 170px);
+    width: clamp(100px, 28vw, 160px);
   }
 }
 
