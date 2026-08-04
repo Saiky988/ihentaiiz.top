@@ -746,22 +746,18 @@
 /* ── Responsive ── */
 @media (min-width: 768px) {
   .watch-hero {
-    height: clamp(420px, 65vh, 700px);
-    min-height: 400px;
-    max-height: 780px;
-    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
-    margin: 0 calc(var(--space-6) * -1);
-    width: calc(100% + var(--space-6) * 2);
+    height: auto !important;
+    min-height: unset !important;
+    padding: var(--space-3) var(--space-4) !important;
   }
-
-  .watch-hero-backdrop-img {
-    object-position: center 30%;
+	
+  .watch-hero-backdrop {
+    display: none;
   }
 
   .watch-hero-content {
-    padding: var(--space-10) var(--space-8);
-    padding-bottom: var(--space-12);
-    max-width: 600px;
+    position: relative !important;
+    padding: 0 !important;
   }
 
   .watch-hero-title {
@@ -769,8 +765,12 @@
   }
 
   .watch-container {
-    padding: var(--space-6);
-    gap: var(--space-8);
+    display: flex;
+    flex-direction: column;
+  }
+	
+  .watch-player-section {
+    order: -1;
   }
 
   .watch-skeleton {
