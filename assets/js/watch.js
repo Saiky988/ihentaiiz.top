@@ -1,6 +1,6 @@
 /**
  * HentaiZ Frontend - Watch Page Handler
- * Tự động adapter cấu trúc JSON cũ & mới + Hỗ trợ chọn Server Player
+ * Render trực tiếp embedUrl gốc (Không qua proxy)
  */
 
 import { formatViews, sanitizeText } from './utils.js';
@@ -40,10 +40,7 @@ export async function initWatchPage() {
       return;
     }
 
-    // Adapt dữ liệu để phù hợp với cả cấu trúc cũ & mới
     const normalizedData = normalizeWatchData(data);
-
-    // Render UI chính
     renderWatchUI(main, normalizedData);
 
   } catch (err) {
@@ -53,7 +50,7 @@ export async function initWatchPage() {
 }
 
 /**
- * Normalizer: Chuẩn hóa dữ liệu giữa cấu trúc cũ và mới
+ * Normalizer: Chuẩn hóa dữ liệu
  */
 function normalizeWatchData(data) {
   const anime = data.anime || {};
@@ -71,7 +68,7 @@ function normalizeWatchData(data) {
 
   const defaultSrc = data.defaultEmbedUrl || (servers[0] ? servers[0].src : '');
 
-  // 2. Parse Genres & Studios từ categories (nếu là dạng JSON mới)
+  // 2. Parse Genres & Studios
   let genres = anime.genres || [];
   let studios = anime.studios || [];
   let releaseYear = anime.releaseYear || 'N/A';
@@ -127,27 +124,24 @@ function renderWatchUI(container, { anime, servers, defaultSrc, episodes }) {
     `;
   }).join('');
 
-  // Nút chọn Server dự phòng
+  // Nút chọn Server dự phòng (Dùng thẳng link src gốc)
   const serversHTML = servers.map((srv, idx) => {
     const isPrimary = srv.src === defaultSrc || (idx === 0 && !defaultSrc);
     const activeClass = isPrimary ? 'active' : '';
-    const proxyUrl = `https://cdn.elyriax.com/api/v1/hentai/player?url=${encodeURIComponent(srv.src)}`;
     return `
-      <button class="server-btn ${activeClass}" data-src="${proxyUrl}">
+      <button class="server-btn ${activeClass}" data-src="${srv.src}">
         🚀 Server ${srv.name}
       </button>
     `;
   }).join('');
 
-  const initialProxyUrl = defaultSrc ? `https://cdn.elyriax.com/api/v1/hentai/player?url=${encodeURIComponent(defaultSrc)}` : '';
-
   container.innerHTML = `
     <div class="watch-container" style="max-width: 1400px; margin: 0 auto; padding: 20px 16px;">
       
-      <!-- Video Player Frame -->
+      <!-- Video Player Frame (Load link gốc trực tiếp) -->
       <div class="player-wrapper" style="position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-        ${initialProxyUrl ? `
-          <iframe id="video-iframe" src="${initialProxyUrl}" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        ${defaultSrc ? `
+          <iframe id="video-iframe" src="${defaultSrc}" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
         ` : `
           <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9ca3af;">
             <span>⚠️ Nguồn video chưa sẵn sàng</span>
@@ -219,7 +213,6 @@ function renderWatchUI(container, { anime, servers, defaultSrc, episodes }) {
     </div>
   `;
 
-  // Thêm sự kiện click đổi Server video
   bindServerEvents(container);
 }
 
@@ -237,17 +230,14 @@ function bindServerEvents(container) {
       const src = btn.getAttribute('data-src');
       if (!src) return;
 
-      // Đổi class active
       serverBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      // Đổi src iframe
       iframe.src = src;
     });
   });
 }
 
-// Skeleton Loading
 function renderSkeleton(container) {
   container.innerHTML = `
     <div style="max-width: 1400px; margin: 0 auto; padding: 20px 16px;">
@@ -258,7 +248,6 @@ function renderSkeleton(container) {
   `;
 }
 
-// 404 Not Found Page
 function renderNotFound(container, message) {
   container.innerHTML = `
     <div style="padding: 80px 20px; max-width: 500px; margin: 0 auto; text-align: center;">
