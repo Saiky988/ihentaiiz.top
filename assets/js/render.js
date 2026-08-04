@@ -15,23 +15,26 @@ import { createLazyObserver, normalizeImageURL } from './utils.js';
 let lazyObserver = null;
 
 /**
- * Hàm mới: Chỉ render Header, Announcement và Footer chung cho toàn trang
+ * Render shared layout: Header, Announcement, Footer, Nav
+ * Used by both Home and Watch pages
  */
-export function renderCommonLayout(rawNodes, rawChunks) {
-  const parsed = parseHomeData(rawNodes, rawChunks);
-  if (!parsed) { console.error('Failed to parse layout data'); return null; }
+export function renderSharedUI(parsed) {
+  if (!parsed) return;
 
   const { meta } = parsed;
   const seo = extractSEO(meta);
   const navigation = extractNavigation(meta);
   const announcement = extractAnnouncement(meta);
 
-  // 1. Render Header
+  document.title = seo.title;
+  document.querySelector('meta[name="description"]')?.setAttribute('content', seo.description);
+
+  // Prevent duplicate header
   if (!document.getElementById('site-header')) {
     document.body.prepend(renderHeader({ seo, navigation }));
   }
 
-  // 2. Render Announcement (Thông báo)
+  // Prevent duplicate announcement
   if (!document.getElementById('announcement-bar')) {
     const annFrag = renderAnnouncement(announcement);
     if (annFrag.firstElementChild) {
@@ -39,28 +42,22 @@ export function renderCommonLayout(rawNodes, rawChunks) {
     }
   }
 
-  // 3. Render Footer
-  if (!document.getElementById('site-footer')) {
+  // Prevent duplicate footer
+  if (!document.querySelector('.site-footer')) {
     document.body.appendChild(renderFooter({ navigation, seo }));
   }
 
-  // Khởi tạo các sự kiện tương tác của Header/Drawer/Search/Theme
   setupUIInteractions();
   setupHeaderScroll();
-
-  return parsed;
 }
 
 /**
- * Render đầy đủ Trang chủ
+ * Render Home page body content into #app-main
  */
-export function initRender(rawNodes, rawChunks) {
-  // Render layout chung trước
-  const parsed = renderCommonLayout(rawNodes, rawChunks);
+export function renderHomeBody(parsed) {
   if (!parsed) return;
 
   const { meta, payloads } = parsed;
-  const seo = extractSEO(meta);
   const stats = extractStats(meta);
 
   const hero = extractHero(payloads);
@@ -75,11 +72,9 @@ export function initRender(rawNodes, rawChunks) {
   const studios = extractStudios(payloads);
   const years = extractYears(payloads);
 
-  document.title = seo.title;
-  document.querySelector('meta[name="description"]')?.setAttribute('content', seo.description);
-
   const main = document.getElementById('app-main');
   if (!main) return;
+  main.innerHTML = '';
 
   const contentWrap = document.createElement('div');
   contentWrap.className = 'content-wrap';
@@ -95,12 +90,20 @@ export function initRender(rawNodes, rawChunks) {
   mainGrid.className = 'main-grid';
   mainGrid.appendChild(contentWrap);
   mainGrid.appendChild(sidebar);
-  
-  main.innerHTML = '';
   main.appendChild(mainGrid);
 
   setupLazyImages();
   setupHeroCarousel(hero.episodes.length);
+}
+
+/**
+ * Legacy init for Home page (fetch + render everything)
+ */
+export function initRender(rawNodes, rawChunks) {
+  const parsed = parseHomeData(rawNodes, rawChunks);
+  if (!parsed) { console.error('Failed to parse'); return; }
+  renderSharedUI(parsed);
+  renderHomeBody(parsed);
 }
 
 function setupLazyImages() {
@@ -167,16 +170,14 @@ function setupUIInteractions() {
     menuToggle?.setAttribute('aria-expanded', 'false');
     document.body.style.overflow = '';
   }
-  
-  menuToggle?.onclick = openDrawer;
-  drawerClose?.onclick = closeDrawer;
-  drawerOverlay?.onclick = closeDrawer;
+  menuToggle?.addEventListener('click', openDrawer);
+  drawerClose?.addEventListener('click', closeDrawer);
+  drawerOverlay?.addEventListener('click', closeDrawer);
 
   const searchToggle = document.getElementById('search-toggle');
   const searchClose = document.getElementById('search-close');
   const searchBar = document.getElementById('search-bar');
   const searchInput = document.getElementById('search-input');
-  
   searchToggle?.addEventListener('click', () => { searchBar?.classList.add('open'); searchInput?.focus(); });
   searchClose?.addEventListener('click', () => { searchBar?.classList.remove('open'); });
 
@@ -187,7 +188,6 @@ function setupUIInteractions() {
   const themeToggle = document.getElementById('theme-toggle');
   const stored = localStorage.getItem('theme');
   if (stored === 'light') document.documentElement.classList.add('light');
-  
   themeToggle?.addEventListener('click', () => {
     document.documentElement.classList.toggle('light');
     localStorage.setItem('theme', document.documentElement.classList.contains('light') ? 'light' : 'dark');
