@@ -14,15 +14,54 @@ import { createLazyObserver, normalizeImageURL } from './utils.js';
 
 let lazyObserver = null;
 
-export function initRender(rawNodes, rawChunks) {
+/**
+ * Hàm mới: Chỉ render Header, Announcement và Footer chung cho toàn trang
+ */
+export function renderCommonLayout(rawNodes, rawChunks) {
   const parsed = parseHomeData(rawNodes, rawChunks);
-  if (!parsed) { console.error('Failed to parse'); return; }
+  if (!parsed) { console.error('Failed to parse layout data'); return null; }
+
+  const { meta } = parsed;
+  const seo = extractSEO(meta);
+  const navigation = extractNavigation(meta);
+  const announcement = extractAnnouncement(meta);
+
+  // 1. Render Header
+  if (!document.getElementById('site-header')) {
+    document.body.prepend(renderHeader({ seo, navigation }));
+  }
+
+  // 2. Render Announcement (Thông báo)
+  if (!document.getElementById('announcement-bar')) {
+    const annFrag = renderAnnouncement(announcement);
+    if (annFrag.firstElementChild) {
+      document.body.insertBefore(annFrag, document.body.firstChild);
+    }
+  }
+
+  // 3. Render Footer
+  if (!document.getElementById('site-footer')) {
+    document.body.appendChild(renderFooter({ navigation, seo }));
+  }
+
+  // Khởi tạo các sự kiện tương tác của Header/Drawer/Search/Theme
+  setupUIInteractions();
+  setupHeaderScroll();
+
+  return parsed;
+}
+
+/**
+ * Render đầy đủ Trang chủ
+ */
+export function initRender(rawNodes, rawChunks) {
+  // Render layout chung trước
+  const parsed = renderCommonLayout(rawNodes, rawChunks);
+  if (!parsed) return;
 
   const { meta, payloads } = parsed;
   const seo = extractSEO(meta);
-  const navigation = extractNavigation(meta);
   const stats = extractStats(meta);
-  const announcement = extractAnnouncement(meta);
 
   const hero = extractHero(payloads);
   const latest2d = extractLatest2D(payloads);
@@ -39,14 +78,9 @@ export function initRender(rawNodes, rawChunks) {
   document.title = seo.title;
   document.querySelector('meta[name="description"]')?.setAttribute('content', seo.description);
 
-  document.body.prepend(renderHeader({ seo, navigation }));
-
-  const annFrag = renderAnnouncement(announcement);
-  if (annFrag.firstElementChild) {
-    document.body.insertBefore(annFrag, document.body.firstChild);
-  }
-
   const main = document.getElementById('app-main');
+  if (!main) return;
+
   const contentWrap = document.createElement('div');
   contentWrap.className = 'content-wrap';
 
@@ -61,14 +95,12 @@ export function initRender(rawNodes, rawChunks) {
   mainGrid.className = 'main-grid';
   mainGrid.appendChild(contentWrap);
   mainGrid.appendChild(sidebar);
+  
+  main.innerHTML = '';
   main.appendChild(mainGrid);
-
-  document.body.appendChild(renderFooter({ navigation, seo }));
 
   setupLazyImages();
   setupHeroCarousel(hero.episodes.length);
-  setupUIInteractions();
-  setupHeaderScroll();
 }
 
 function setupLazyImages() {
@@ -135,14 +167,16 @@ function setupUIInteractions() {
     menuToggle?.setAttribute('aria-expanded', 'false');
     document.body.style.overflow = '';
   }
-  menuToggle?.addEventListener('click', openDrawer);
-  drawerClose?.addEventListener('click', closeDrawer);
-  drawerOverlay?.addEventListener('click', closeDrawer);
+  
+  menuToggle?.onclick = openDrawer;
+  drawerClose?.onclick = closeDrawer;
+  drawerOverlay?.onclick = closeDrawer;
 
   const searchToggle = document.getElementById('search-toggle');
   const searchClose = document.getElementById('search-close');
   const searchBar = document.getElementById('search-bar');
   const searchInput = document.getElementById('search-input');
+  
   searchToggle?.addEventListener('click', () => { searchBar?.classList.add('open'); searchInput?.focus(); });
   searchClose?.addEventListener('click', () => { searchBar?.classList.remove('open'); });
 
@@ -153,6 +187,7 @@ function setupUIInteractions() {
   const themeToggle = document.getElementById('theme-toggle');
   const stored = localStorage.getItem('theme');
   if (stored === 'light') document.documentElement.classList.add('light');
+  
   themeToggle?.addEventListener('click', () => {
     document.documentElement.classList.toggle('light');
     localStorage.setItem('theme', document.documentElement.classList.contains('light') ? 'light' : 'dark');
