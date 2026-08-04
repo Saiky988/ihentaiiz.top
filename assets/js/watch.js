@@ -1,10 +1,9 @@
 /**
- * HentaiZ Frontend - Watch Page Handler v2.0
- * Production-ready streaming layout with skeleton loading,
- * SPA episode navigation, and smooth player transitions.
+ * HentaiZ Frontend - Watch Page Handler
+ * Consistent with Home Page design language
  */
 
-import { formatViews, sanitizeText, normalizeImageURL, htmlToFragment } from './utils.js';
+import { formatViews, sanitizeText, normalizeImageURL, htmlToFragment, createLazyObserver } from './utils.js';
 
 /* ───────────────────────────────────────────────────────────────
    STATE
@@ -12,7 +11,8 @@ import { formatViews, sanitizeText, normalizeImageURL, htmlToFragment } from './
 const watchState = {
   isLoading: false,
   currentSlug: null,
-  abortController: null
+  abortController: null,
+  lazyObserver: null
 };
 
 /* ───────────────────────────────────────────────────────────────
@@ -24,11 +24,10 @@ export async function initWatchPage() {
 
   const slug = extractSlug();
   if (!slug) {
-    renderError(main, 'URL không hợp lệ hoặc thiếu slug!');
+    renderError(main, 'URL khong hop le hoac thieu slug!');
     return;
   }
 
-  // Cancel any in-flight request
   if (watchState.abortController) {
     watchState.abortController.abort();
   }
@@ -40,18 +39,16 @@ export async function initWatchPage() {
    ROUTING HELPERS
    ─────────────────────────────────────────────────────────────── */
 function extractSlug() {
-  const pathname = window.location.pathname;
-  const parts = pathname.split('/').filter(Boolean);
+  const parts = window.location.pathname.split('/').filter(Boolean);
   return parts[1] || null;
 }
 
 function scrollToPlayer(behavior = 'smooth') {
   const player = document.querySelector('.watch-player-section');
-  if (player) {
-    const headerOffset = 80;
-    const top = player.getBoundingClientRect().top + window.scrollY - headerOffset;
-    window.scrollTo({ top, behavior });
-  }
+  if (!player) return;
+  const headerOffset = 80;
+  const top = player.getBoundingClientRect().top + window.scrollY - headerOffset;
+  window.scrollTo({ top, behavior });
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -64,7 +61,7 @@ async function fetchWatchData(slug) {
   const res = await fetch(API_URL, { signal: watchState.abortController.signal });
 
   if (res.status === 404) return null;
-  if (!res.ok) throw new Error(`Lỗi máy chủ (${res.status})`);
+  if (!res.ok) throw new Error(`Loi may chu (${res.status})`);
 
   const data = await res.json();
   if (!data.ok || !data.anime) return null;
@@ -75,7 +72,6 @@ async function fetchWatchData(slug) {
 function normalizeWatchData(data) {
   const anime = data.anime || {};
 
-  // Embed servers
   let servers = [];
   if (Array.isArray(data.embedUrls) && data.embedUrls.length > 0) {
     servers = data.embedUrls.map((item, idx) => ({
@@ -88,7 +84,6 @@ function normalizeWatchData(data) {
 
   const defaultSrc = data.defaultEmbedUrl || (servers[0]?.src || '');
 
-  // Parse Genres & Studios from categories if present
   let genres = anime.genres || [];
   let studios = anime.studios || [];
   let releaseYear = anime.releaseYear || 'N/A';
@@ -96,11 +91,11 @@ function normalizeWatchData(data) {
   if (Array.isArray(anime.categories)) {
     anime.categories.forEach(cat => {
       const label = (cat.label || '').toLowerCase();
-      if (label.includes('thể loại') || label.includes('category')) {
+      if (label.includes('the loai') || label.includes('category')) {
         genres = cat.tags || [];
       } else if (label.includes('studio')) {
         studios = cat.tags || [];
-      } else if (label.includes('năm') || label.includes('year')) {
+      } else if (label.includes('nam') || label.includes('year')) {
         if (cat.tags?.[0]) releaseYear = cat.tags[0].name;
       }
     });
@@ -129,26 +124,22 @@ async function loadWatchPage(container, slug) {
   watchState.isLoading = true;
   watchState.currentSlug = slug;
 
-  // Show skeleton only if container is empty or has error
-  const hasSkeleton = container.querySelector('.watch-skeleton');
-  const hasContent = container.querySelector('.watch-container');
-  const hasError = container.querySelector('.watch-error');
-
-  if (!hasSkeleton && !hasContent && !hasError) {
+  const hasContent = container.querySelector('.watch-container, .watch-skeleton, .watch-error');
+  if (!hasContent) {
     renderSkeleton(container);
   }
 
   try {
     const data = await fetchWatchData(slug);
     if (!data) {
-      renderError(container, 'Bộ phim này không tồn tại hoặc đã bị gỡ bỏ.');
+      renderError(container, 'Bo phim nay khong ton tai hoac da bi go bo.');
       return;
     }
     renderWatchUI(container, data);
   } catch (err) {
     if (err.name === 'AbortError') return;
     console.error('[Watch Page Error]:', err);
-    renderError(container, `Không thể tải dữ liệu: ${err.message}`);
+    renderError(container, `Khong the tai du lieu: ${err.message}`);
   } finally {
     watchState.isLoading = false;
     watchState.abortController = null;
@@ -161,39 +152,49 @@ async function loadWatchPage(container, slug) {
 function renderSkeleton(container) {
   const html = `
     <div class="watch-skeleton">
-      <div class="skeleton-player shimmer"></div>
-
-      <div class="skeleton-block">
-        <div class="skeleton-servers">
-          <div class="skeleton-pill shimmer"></div>
-          <div class="skeleton-pill shimmer"></div>
-          <div class="skeleton-pill shimmer"></div>
+      <div class="watch-skeleton-hero skeleton">
+        <div class="skeleton-hero-content" style="position:absolute;bottom:0;left:0;right:0;padding:var(--space-8) var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);max-width:600px;">
+          <div class="skeleton skeleton-text" style="width:120px;height:20px;"></div>
+          <div class="skeleton skeleton-title" style="width:70%;height:36px;"></div>
+          <div class="skeleton skeleton-text" style="width:50%;height:16px;"></div>
         </div>
       </div>
 
-      <div class="skeleton-block">
-        <div class="skeleton-episodes">
-          ${Array(10).fill('<div class="skeleton-ep-btn shimmer"></div>').join('')}
+      <div class="watch-skeleton-player skeleton"></div>
+
+      <div class="watch-skeleton-section">
+        <div class="skeleton skeleton-text-sm" style="width:100px;height:14px;margin-bottom:var(--space-2);"></div>
+        <div class="watch-skeleton-pills">
+          <div class="watch-skeleton-pill skeleton"></div>
+          <div class="watch-skeleton-pill skeleton"></div>
+          <div class="watch-skeleton-pill skeleton"></div>
         </div>
       </div>
 
-      <div class="skeleton-block skeleton-info">
-        <div class="skeleton-title shimmer"></div>
-        <div class="skeleton-meta">
-          <div class="skeleton-meta-item shimmer"></div>
-          <div class="skeleton-meta-item shimmer"></div>
-          <div class="skeleton-meta-item shimmer"></div>
+      <div class="watch-skeleton-section">
+        <div class="skeleton skeleton-text-sm" style="width:140px;height:14px;margin-bottom:var(--space-2);"></div>
+        <div class="watch-skeleton-episodes">
+          ${Array(10).fill('<div class="watch-skeleton-ep-btn skeleton"></div>').join('')}
         </div>
-        <div class="skeleton-chips">
-          <div class="skeleton-chip shimmer"></div>
-          <div class="skeleton-chip shimmer"></div>
-          <div class="skeleton-chip shimmer"></div>
-          <div class="skeleton-chip shimmer"></div>
+      </div>
+
+      <div class="watch-skeleton-section">
+        <div class="watch-skeleton-title skeleton"></div>
+        <div class="watch-skeleton-meta">
+          <div class="watch-skeleton-meta-item skeleton"></div>
+          <div class="watch-skeleton-meta-item skeleton"></div>
+          <div class="watch-skeleton-meta-item skeleton"></div>
         </div>
-        <div class="skeleton-desc">
-          <div class="skeleton-line shimmer"></div>
-          <div class="skeleton-line medium shimmer"></div>
-          <div class="skeleton-line short shimmer"></div>
+        <div class="watch-skeleton-chips">
+          <div class="watch-skeleton-chip skeleton"></div>
+          <div class="watch-skeleton-chip skeleton"></div>
+          <div class="watch-skeleton-chip skeleton"></div>
+          <div class="watch-skeleton-chip skeleton"></div>
+        </div>
+        <div class="watch-skeleton-desc">
+          <div class="watch-skeleton-line skeleton"></div>
+          <div class="watch-skeleton-line medium skeleton"></div>
+          <div class="watch-skeleton-line short skeleton"></div>
         </div>
       </div>
     </div>
@@ -207,19 +208,18 @@ function renderSkeleton(container) {
 function renderWatchUI(container, data) {
   const { anime, servers, defaultSrc, episodes } = data;
 
-  // Update document title
-  const epLabel = anime.episodeNumber ? ` - Tập ${anime.episodeNumber}` : '';
+  const epLabel = anime.episodeNumber ? ` - Tap ${anime.episodeNumber}` : '';
   document.title = `${sanitizeText(anime.title)}${epLabel} | HentaiZ`;
 
-  // Build sections
+  const heroFrag = renderHero(anime);
   const playerFrag = renderPlayer(defaultSrc);
   const serversFrag = servers.length > 1 ? renderServers(servers, defaultSrc) : null;
   const episodesFrag = episodes.length > 0 ? renderEpisodes(episodes, anime.slug) : null;
   const infoFrag = renderInfo(anime);
 
-  // Assemble
   const wrapper = document.createElement('div');
   wrapper.className = 'watch-container';
+  wrapper.appendChild(heroFrag);
   wrapper.appendChild(playerFrag);
   if (serversFrag) wrapper.appendChild(serversFrag);
   if (episodesFrag) wrapper.appendChild(episodesFrag);
@@ -228,8 +228,45 @@ function renderWatchUI(container, data) {
   container.innerHTML = '';
   container.appendChild(wrapper);
 
-  // Bind events
+  setupLazyImages();
   bindEvents(container, data);
+}
+
+/* ───────────────────────────────────────────────────────────────
+   HERO
+   ─────────────────────────────────────────────────────────────── */
+function renderHero(anime) {
+  const backdrop = anime.backdropImage || anime.posterImage || '';
+  const epBadge = anime.episodeNumber
+    ? `<span class="watch-hero-badge accent"><i class="fa-solid fa-play" style="font-size:9px;margin-right:4px;"></i>Tap ${anime.episodeNumber}</span>`
+    : '';
+  const viewsBadge = anime.viewsTotal
+    ? `<span class="watch-hero-badge outline"><i class="fa-solid fa-eye" style="font-size:9px;margin-right:4px;"></i>${formatViews(anime.viewsTotal)}</span>`
+    : '';
+  const yearBadge = anime.releaseYear && anime.releaseYear !== 'N/A'
+    ? `<span class="watch-hero-badge outline"><i class="fa-solid fa-calendar" style="font-size:9px;margin-right:4px;"></i>${anime.releaseYear}</span>`
+    : '';
+
+  const studios = (anime.studios || []).map(s => sanitizeText(s.name)).filter(Boolean).join(', ');
+
+  const html = `
+    <section class="watch-hero" aria-label="Hero">
+      <div class="watch-hero-backdrop">
+        ${backdrop ? `<img class="watch-hero-backdrop-img lazy-img" data-src="${backdrop}" alt="${sanitizeText(anime.title)}" />` : ''}
+        <div class="watch-hero-vignette"></div>
+      </div>
+      <div class="watch-hero-content">
+        <div class="watch-hero-meta">
+          ${epBadge}
+          ${viewsBadge}
+          ${yearBadge}
+        </div>
+        <h1 class="watch-hero-title">${sanitizeText(anime.title)}</h1>
+        ${studios ? `<div class="watch-hero-studios"><i class="fa-solid fa-film" style="font-size:9px;margin-right:4px;"></i>${studios}</div>` : ''}
+      </div>
+    </section>
+  `;
+  return htmlToFragment(html);
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -250,9 +287,9 @@ function renderPlayer(defaultSrc) {
           ></iframe>
         ` : ''}
         <div class="watch-player-loader" id="player-loader">
-          <div class="player-spinner"></div>
-          <div class="player-loader-text">
-            Đang tải player <span class="player-loader-brand">HentaiZ</span>
+          <div class="watch-player-spinner"></div>
+          <div class="watch-player-loader-text">
+            Dang tai player <span class="watch-player-loader-brand">HentaiZ</span>
           </div>
         </div>
       </div>
@@ -273,19 +310,19 @@ function renderServers(servers, defaultSrc) {
         data-src="${srv.src}"
         type="button"
       >
-        <span class="pill-icon">🚀</span>
+        <span class="pill-icon"><i class="fa-solid fa-server"></i></span>
         <span class="pill-label">Server ${sanitizeText(srv.name)}</span>
       </button>
     `;
   }).join('');
 
   const html = `
-    <section class="watch-servers-section" aria-label="Chọn server">
+    <section class="watch-servers-section" aria-label="Chon server">
       <div class="watch-servers-header">
-        <span>⚙️</span>
-        <span>Đổi Server</span>
+        <span><i class="fa-solid fa-server"></i></span>
+        <span>Doi Server</span>
       </div>
-      <div class="watch-servers-list" role="group" aria-label="Danh sách server">
+      <div class="watch-servers-list" role="group" aria-label="Danh sach server">
         ${pills}
       </div>
     </section>
@@ -299,7 +336,7 @@ function renderServers(servers, defaultSrc) {
 function renderEpisodes(episodes, currentSlug) {
   const buttons = episodes.map(ep => {
     const isActive = ep.slug === currentSlug;
-    const icon = isActive ? '<span class="ep-icon">▶</span>' : '';
+    const icon = isActive ? '<span class="ep-icon"><i class="fa-solid fa-play"></i></span>' : '';
     return `
       <button 
         class="episode-btn ${isActive ? 'active' : ''}" 
@@ -308,16 +345,16 @@ function renderEpisodes(episodes, currentSlug) {
         ${isActive ? 'aria-current="true"' : ''}
       >
         ${icon}
-        <span class="ep-label">Tập ${ep.episodeNumber || 1}</span>
+        <span class="ep-label">Tap ${ep.episodeNumber || 1}</span>
       </button>
     `;
   }).join('');
 
   const html = `
-    <section class="watch-episodes-section" aria-label="Danh sách tập">
+    <section class="watch-episodes-section" aria-label="Danh sach tap">
       <div class="watch-episodes-header">
-        <span>📺 Danh Sách Tập</span>
-        <span class="watch-episodes-count">(${episodes.length} tập)</span>
+        <span><i class="fa-solid fa-layer-group"></i> Danh Sach Tap</span>
+        <span class="watch-episodes-count">(${episodes.length} tap)</span>
       </div>
       <div class="episode-grid" role="list">
         ${buttons}
@@ -344,20 +381,20 @@ function renderInfo(anime) {
   }).join('');
 
   const epBadge = anime.episodeNumber
-    ? `<span class="meta-badge">Tập ${anime.episodeNumber}</span>`
+    ? `<span class="meta-badge"><i class="fa-solid fa-play" style="font-size:8px;margin-right:4px;"></i>Tap ${anime.episodeNumber}</span>`
     : '';
 
   const views = anime.viewsTotal
-    ? `<span class="meta-item">👁️ ${formatViews(anime.viewsTotal)} lượt xem</span>`
+    ? `<span class="meta-item"><i class="fa-solid fa-eye" style="font-size:10px;margin-right:4px;color:var(--hz-text-muted);"></i>${formatViews(anime.viewsTotal)} luot xem</span>`
     : '';
 
-  const year = `<span class="meta-item">📅 Năm: ${sanitizeText(String(anime.releaseYear))}</span>`;
-  const studioMeta = studios ? `<span class="meta-item">🏢 Studio: ${studios}</span>` : '';
+  const year = `<span class="meta-item"><i class="fa-solid fa-calendar" style="font-size:10px;margin-right:4px;color:var(--hz-text-muted);"></i>Nam: ${sanitizeText(String(anime.releaseYear))}</span>`;
+  const studioMeta = studios ? `<span class="meta-item"><i class="fa-solid fa-film" style="font-size:10px;margin-right:4px;color:var(--hz-text-muted);"></i>Studio: ${studios}</span>` : '';
 
-  const desc = sanitizeText(anime.description) || 'Chưa có mô tả cho bộ phim này.';
+  const desc = sanitizeText(anime.description) || 'Chua co mo ta cho bo phim nay.';
 
   const html = `
-    <section class="watch-info-section" aria-label="Thông tin anime">
+    <section class="watch-info-section" aria-label="Thong tin anime">
       <div class="watch-info-header">
         <h1 class="watch-info-title">${sanitizeText(anime.title)}</h1>
       </div>
@@ -372,12 +409,28 @@ function renderInfo(anime) {
       ${genres ? `<div class="watch-genres">${genres}</div>` : ''}
 
       <div class="watch-description">
-        <h4 class="watch-description-title">Mô tả nội dung</h4>
+        <h4 class="watch-description-title">Mo ta noi dung</h4>
         <p class="watch-description-text">${desc}</p>
       </div>
     </section>
   `;
   return htmlToFragment(html);
+}
+
+/* ───────────────────────────────────────────────────────────────
+   LAZY IMAGES
+   ─────────────────────────────────────────────────────────────── */
+function setupLazyImages() {
+  if (watchState.lazyObserver) watchState.lazyObserver.disconnect();
+  watchState.lazyObserver = createLazyObserver((img) => {
+    const src = img.getAttribute('data-src');
+    if (!src) return;
+    img.src = normalizeImageURL(src);
+    img.removeAttribute('data-src');
+    img.classList.remove('lazy-img');
+    img.classList.add('lazy-loaded');
+  });
+  document.querySelectorAll('.watch-hero .lazy-img').forEach(img => watchState.lazyObserver.observe(img));
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -389,7 +442,7 @@ function bindEvents(container, data) {
   const serverBtns = container.querySelectorAll('.server-pill');
   const episodeBtns = container.querySelectorAll('.episode-btn');
 
-  // Player load handler
+  // Player load
   if (iframe) {
     const onLoad = () => {
       if (loader) loader.classList.add('hidden');
@@ -397,7 +450,6 @@ function bindEvents(container, data) {
     };
     iframe.addEventListener('load', onLoad);
 
-    // Fallback: hide loader after timeout if load event doesn't fire
     const fallbackTimer = setTimeout(() => {
       if (loader && !loader.classList.contains('hidden')) {
         loader.classList.add('hidden');
@@ -405,7 +457,6 @@ function bindEvents(container, data) {
       }
     }, 4000);
 
-    // Store cleanup ref on iframe for edge cases
     iframe._watchCleanup = () => {
       iframe.removeEventListener('load', onLoad);
       clearTimeout(fallbackTimer);
@@ -420,11 +471,9 @@ function bindEvents(container, data) {
       const src = btn.dataset.src;
       if (!src || btn.classList.contains('active')) return;
 
-      // Update active state
       serverBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      // Update player
       if (iframe && loader) {
         loader.classList.remove('hidden');
         iframe.classList.remove('loaded');
@@ -454,11 +503,11 @@ function renderError(container, message) {
   const html = `
     <div class="watch-error">
       <div class="watch-error-code">404</div>
-      <h2 class="watch-error-title">Không Tìm Thấy Phim</h2>
+      <h2 class="watch-error-title">Khong Tim Thay Phim</h2>
       <p class="watch-error-message">${sanitizeText(message)}</p>
       <a href="/" class="watch-error-btn">
-        <span>←</span>
-        <span>Về Trang Chủ</span>
+        <i class="fa-solid fa-chevron-left"></i>
+        <span>Ve Trang Chu</span>
       </a>
     </div>
   `;
@@ -466,7 +515,7 @@ function renderError(container, message) {
 }
 
 /* ───────────────────────────────────────────────────────────────
-   POPSTATE HANDLER (SPA back/forward)
+   POPSTATE HANDLER
    ─────────────────────────────────────────────────────────────── */
 window.addEventListener('popstate', () => {
   if (window.location.pathname.startsWith('/watch')) {
