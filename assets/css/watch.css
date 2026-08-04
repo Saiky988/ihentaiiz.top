@@ -746,18 +746,22 @@
 /* ── Responsive ── */
 @media (min-width: 768px) {
   .watch-hero {
-    height: auto !important;
-    min-height: unset !important;
-    padding: var(--space-3) var(--space-4) !important;
+    height: clamp(420px, 65vh, 700px);
+    min-height: 400px;
+    max-height: 780px;
+    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
+    margin: 0 calc(var(--space-6) * -1);
+    width: calc(100% + var(--space-6) * 2);
   }
-	
-  .watch-hero-backdrop {
-    display: none;
+
+  .watch-hero-backdrop-img {
+    object-position: center 30%;
   }
 
   .watch-hero-content {
-    position: relative !important;
-    padding: 0 !important;
+    padding: var(--space-10) var(--space-8);
+    padding-bottom: var(--space-12);
+    max-width: 600px;
   }
 
   .watch-hero-title {
@@ -765,12 +769,8 @@
   }
 
   .watch-container {
-    display: flex;
-    flex-direction: column;
-  }
-	
-  .watch-player-section {
-    order: -1;
+    padding: var(--space-6);
+    gap: var(--space-8);
   }
 
   .watch-skeleton {
@@ -829,32 +829,57 @@
   }
 }
 
+/* ── Responsive Mobile Optimization ── */
 @media (max-width: 768px) {
   .watch-container {
     padding: var(--space-3) var(--space-4);
-    gap: var(--space-5);
+    gap: var(--space-4);
+    display: flex;
+    flex-direction: column;
   }
 
   .watch-skeleton {
     padding: var(--space-3) var(--space-4);
-    gap: var(--space-5);
+    gap: var(--space-4);
   }
 
+  /* Đưa Player lên trên cùng trên Mobile */
+  .watch-player-section {
+    order: -2;
+  }
+
+  /* Thu gọn Hero Banner không bị chiếm quá nhiều diện tích */
   .watch-hero {
-    aspect-ratio: 16 / 9;
-    min-height: 220px;
-    max-height: 460px;
-    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    order: -1;
+    height: auto !important;
+    min-height: unset !important;
+    max-height: unset !important;
+    aspect-ratio: unset !important;
+    border-radius: var(--radius-md) !important;
+    background: transparent !important;
   }
 
-  .watch-hero-title {
-    font-size: clamp(1.125rem, 4.8vw, 1.5rem);
-    -webkit-line-clamp: 2;
+  /* Ẩn backdrop image rườm rà trên Mobile */
+  .watch-hero-backdrop {
+    display: none !important;
   }
 
   .watch-hero-content {
-    padding-bottom: calc(var(--space-5) + var(--bottom-nav-height));
-    gap: var(--space-1-5);
+    position: relative !important;
+    inset: auto !important;
+    padding: 0 !important;
+    padding-bottom: 0 !important;
+    gap: var(--space-1);
+  }
+
+  .watch-hero-title {
+    font-size: clamp(1.125rem, 4.8vw, 1.375rem);
+    text-shadow: none;
+    -webkit-line-clamp: 2;
+  }
+
+  .watch-hero-studios {
+    text-shadow: none;
   }
 
   .watch-player-wrap {
@@ -916,17 +941,12 @@
 @media (max-width: 480px) {
   .watch-container {
     padding: var(--space-2) var(--space-2);
-    gap: var(--space-2);
+    gap: var(--space-3);
   }
 
   .watch-skeleton {
     padding: var(--space-2);
-    gap: var(--space-2);
-  }
-
-  .watch-hero {
-    min-height: 200px;
-    max-height: 380px;
+    gap: var(--space-3);
   }
 
   .watch-hero-title {
@@ -950,6 +970,7 @@
     font-size: var(--text-lg);
   }
 }
+
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
