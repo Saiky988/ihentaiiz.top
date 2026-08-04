@@ -219,8 +219,8 @@ function renderWatchUI(container, data) {
 
   const wrapper = document.createElement('div');
   wrapper.className = 'watch-container';
-
   wrapper.appendChild(heroFrag);
+  wrapper.appendChild(playerFrag);
   if (serversFrag) wrapper.appendChild(serversFrag);
   if (episodesFrag) wrapper.appendChild(episodesFrag);
   wrapper.appendChild(infoFrag);
